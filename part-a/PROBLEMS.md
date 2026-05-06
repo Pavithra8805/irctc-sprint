@@ -1,5 +1,10 @@
 # IRCTC Problem Discovery — Part A
 
+## Summary
+- Total problems documented: 6 (3 given + 3 self-discovered)
+- Platform explored: irctc.co.in (live, as of May 6, 2026)
+- Devices used: Desktop Chrome and mobile browser
+
 ---
 
 ## Problem 1: Tatkal Booking Crashes at 10:00 AM [Given]
