@@ -1,10 +1,5 @@
 # IRCTC Problem Discovery — Part A
 
-## Summary
-- Total problems documented: 6 (3 given + 3 self-discovered)
-- Platform explored: irctc.co.in (live, as of May 6, 2026)
-- Devices used: Desktop Chrome / Mobile Safari
-
 ---
 
 ## Problem 1: Tatkal Booking Crashes at 10:00 AM [Given]
@@ -90,21 +85,3 @@ Step 3–5: The seat selection state is stored in component-level React state or
 Users end up with unwanted seats (upper berths when they needed lower for elderly parents, middle seats when they prefer aisles for accessibility). Users must rebook or request seat changes after boarding — adding post-purchase friction and dissatisfaction.
 
 ---
-
-## Problem 4: [Self-Discovered] — *To be documented after live platform exploration*
-
----
-
-## Problem 5: [Self-Discovered] — *To be documented after live platform exploration*
-
----
-
-## Problem 6: [Self-Discovered] — *To be documented after live platform exploration*
-
----
-
-## Next Steps
-- Explore IRCTC live platform (irctc.co.in) systematically
-- Self-discover 3 additional problems using the provided framework
-- Document each with screenshots and step-by-step flows
-- Commit and push to GitHub
