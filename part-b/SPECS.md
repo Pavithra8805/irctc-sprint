@@ -24,6 +24,10 @@ Replace the direct-hit Tatkal booking page with a virtual queue. Users who arriv
 6. If the timer expires, the slot is released and the next queued user is promoted.
 7. If the browser disconnects briefly, the user can reconnect with the same queue ID and resume state.
 
+### Wireframe
+![Tatkal queue screen wireframe](../assets/wireframes/tatkal-queue-screen.png)
+*Caption: Proposed Tatkal virtual queue screen - mobile view* 
+
 ### Technical Implementation Plan
 **System components affected:**
 - Frontend Tatkal search and booking pages.
@@ -86,6 +90,10 @@ Keep the user’s chosen filters visible and persistent across refreshes. Apply 
 5. A freshness label tells the user when the results were last validated.
 6. If the backend data is stale, the UI shows a warning instead of pretending the result is live.
 
+### Wireframe
+![Search filter persistence wireframe](../assets/wireframes/search-filter-persistence.png)
+*Caption: Before-and-after search results layout with persisted filter chips and freshness label*
+
 ### Technical Implementation Plan
 **System components affected:**
 - Search results frontend.
@@ -142,6 +150,10 @@ Keep the selected seat locked to the booking draft until the user either confirm
 4. If the seat is still available, the booking confirms it on final submit.
 5. If the seat is taken by another user before submit, the UI prompts the user to reselect instead of silently switching to auto.
 6. If the device rotates or the page refreshes, the draft restores from server state.
+
+### Wireframe
+![Seat selection draft wireframe](../assets/wireframes/seat-selection-draft.png)
+*Caption: Seat map and passenger details draft with persistent seat hold summary*
 
 ### Technical Implementation Plan
 **System components affected:**
@@ -200,6 +212,10 @@ Refresh availability automatically for visible train cards and label every card 
 4. If the user scrolls, the system refreshes the newly visible cards in the background.
 5. If auto-refresh fails, the manual button remains available with an explanation.
 
+### Wireframe
+![Availability auto-refresh wireframe](../assets/wireframes/availability-auto-refresh.png)
+*Caption: Before-and-after train result card showing live freshness and auto-refresh behavior*
+
 ### Technical Implementation Plan
 **System components affected:**
 - Search results frontend card rendering.
@@ -253,6 +269,10 @@ Show a clear arrival-day label next to overnight timings and convert the raw sch
 3. The duration remains visible so the user understands travel length.
 4. Clicking the card still opens details, but the user no longer needs to click just to decode the date.
 
+### Wireframe
+![Overnight time display wireframe](../assets/wireframes/overnight-time-display.png)
+*Caption: Search result card with explicit next-day arrival label and duration*
+
 ### Technical Implementation Plan
 **System components affected:**
 - Search result card formatter.
@@ -304,6 +324,10 @@ Let users subscribe to PNR status changes from the booked tickets or PNR status 
 3. The backend watches for status changes and emits an event when the PNR is upgraded.
 4. User receives the alert with the updated status and next action.
 5. If the user ignores the alert, the status remains visible in Booked Tickets and PNR Status.
+
+### Wireframe
+![Waitlist alert subscription wireframe](../assets/wireframes/waitlist-alert-subscription.png)
+*Caption: PNR status page with opt-in alert control and confirmation card*
 
 ### Technical Implementation Plan
 **System components affected:**
