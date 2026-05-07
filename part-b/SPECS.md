@@ -115,20 +115,27 @@ Keep the user’s chosen filters visible and persistent across refreshes. Apply 
 - Rehydrate filters on reload or back navigation.
 - Show filter chips, a refresh timestamp, and a stale-data warning state.
 - Apply loading skeletons instead of clearing the list on each refresh.
+- Use a unique session ID to prevent multi-tab filter collision (cross-tab storage events to sync state).
+- Set filter expiry to 30 minutes of inactivity; after that, offer the user a "restore previous search" prompt instead of silently resuming stale filters.
 
 **Third-party services (if any):**
 - None required.
 
+**Rate Limiting Assumptions:**
+- Assume Railway API allows up to 100 filtered search queries per minute per user; the spec does not add polling, only persistence and server-side filtering on the initial request and on user action.
+- If the backend sees rate-limit errors, fall back to client-side filtering on cached results with a visible "results may be stale" warning.
+
 ### Success Metrics
-- Filter reset complaints drop by at least 70%.
-- Search abandonment after applying a filter drops by 25%.
-- Users spend less time reapplying filters across repeated search sessions.
+- Filter reset complaints drop by at least 70% (measure via support tickets and in-app feedback forms).
+- Search abandonment after applying a filter drops by 25% (measure via analytics comparing "filter applied" → "no booking initiated" within 5 minutes; caveat: this assumes other factors remain constant, so A/B test is recommended).
+- Users spend less time reapplying filters across repeated search sessions (measure via session cohort analysis: average time between filter application and booking, across users who search 2+ times in a week).
 
 ### Edge Cases and Constraints
-- If filtered results return empty, the UI must explain whether it is a true no-match or a stale-data issue.
-- On low bandwidth connections, the page should preserve the current filter state even if live refresh fails.
-- The Railway API can still return mixed freshness, so the UI should display a data age warning instead of implying certainty.
-- Filters must survive refresh without leaking one user’s search state into another session.
+- If filtered results return empty, the UI must explain whether it is a true no-match or a stale-data issue. Show an inline prompt: "Try clearing the 'Quota' filter to see more options" instead of just "No results found."
+- On low bandwidth connections, the page should preserve the current filter state even if live refresh fails. If the search API times out after 3 seconds, show the cached results with a "Connection slow — results may be outdated" banner and a manual retry button.
+- The Railway API can still return mixed freshness, so the UI should display a data age warning instead of implying certainty. If the API response is > 5 minutes old, do not apply the filter; instead, prompt the user to "Refresh availability" before filtering.
+- Filters must survive refresh without leaking one user's search state into another session. Use a session token in the filter payload, and discard filters if the session token expires (30-minute inactivity timeout).
+- Multi-tab filtering: if the user opens the same search in two tabs and applies different filters, the second tab's action takes precedence, and both tabs sync via a storage event listener.
 
 ---
 
@@ -235,20 +242,28 @@ Refresh availability automatically for visible train cards and label every card 
 - Replace repeated per-class refresh taps with visible auto-refresh for active rows.
 - Use visibility-aware polling so offscreen cards do not waste network calls.
 - Show timestamps, loading states, and retry states.
+- Set auto-refresh interval to 15 seconds for visible cards (configurable server-side to adapt to Railway API rate limits).
+- Disable auto-refresh on cellular connections with latency > 200ms or when the page is backgrounded; show a manual "Refresh" button with last-update time instead.
+- On 2G or poor connections: fall back to manual refresh only, no auto-polling. Show a banner: "Live updates disabled on slow connection."
 
 **Third-party services (if any):**
 - None required.
 
+**Rate Limiting Assumptions:**
+- Assume Railway API allows up to 50 availability queries per train per minute. If we have 15 visible trains and poll every 15 seconds, that's 60 queries/min total — at the limit. The implementation must use batching (`GET /trains/availability?train_ids=...`) or risk hitting rate limits. If rate-limited, switch to 30-second polling and show a "Availability updates slowed" message.
+
 ### Success Metrics
-- Manual refresh clicks per search session drop by at least 80%.
-- Time spent comparing class availability drops by 2-3 minutes on average.
-- Users who reach booking after viewing live availability convert more often because they trust the data.
+- Manual refresh clicks per search session drop by at least 80% (measure via analytics: event count for "refresh button clicked" before vs. after launch).
+- Time spent on search results page before proceeding to booking drops by 2-3 minutes on average (measured as session cohort percentile: median time from search-results-loaded to booking-page-loaded).
+- Conversion rate after viewing auto-refreshed availability increases by at least 8% (measure via A/B test: control = old manual refresh, variant = new auto-refresh; caveat: this improvement assumes users trust fresher data, but may be offset by other factors like availability volatility, so monitor closely).
+- Availability data shown is never stale by more than 20 seconds on average (instrument the availability API response timestamps and track difference vs. client clock).
 
 ### Edge Cases and Constraints
-- Auto-refresh should pause or slow down on weak connections or when the page is backgrounded.
-- The Railway API may rate-limit availability checks, so batching and visibility-based polling are required.
-- If live updates fail, the card must clearly show that the data is stale instead of appearing current.
-- The user should still be able to manually refresh a single card if they want finer control.
+- Auto-refresh should pause or slow down on weak connections or when the page is backgrounded. Stop polling if the browser tab is hidden for > 10 seconds, and resume when the tab regains focus. On connection latency > 200ms, switch to 30-second intervals instead of 15.
+- The Railway API may rate-limit availability checks, so batching and visibility-based polling are required. Implement client-side request coalescing: if two class refreshes are requested within 2 seconds, batch them into a single API call.
+- If live updates fail, the card must clearly show that the data is stale instead of appearing current. If 3 consecutive polls fail, show a red error badge: "Availability data unavailable — click to retry" instead of continuing to display the last known state.
+- The user should still be able to manually refresh a single card if they want finer control. Provide a per-card refresh button and allow manual override of the auto-refresh interval.
+- If the Railway API is temporarily offline, fall back to the last known availability state and mark all cards as "Last updated: X minutes ago." Do not attempt to hide the staleness — make it transparent so users can decide whether to proceed or wait.
 
 ---
 
